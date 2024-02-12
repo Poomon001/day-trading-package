@@ -1,4 +1,4 @@
-module github.com/Poomon001/day-trading-package
+module day-trading-package/middleware/identification
 
 go 1.21.6
 
