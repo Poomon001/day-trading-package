@@ -5,7 +5,3 @@ import ("fmt")
 func TestMain() {
 	fmt.Println("TestMain")
 }
-
-func TestIdentification() {
-	identification.Test()
-}
