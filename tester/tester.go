@@ -1,6 +1,6 @@
 package tester
 
-import (fmt)
+import ("fmt")
 
 func Tester() {
 	fmt.Println("Test Package")
