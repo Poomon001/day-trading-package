@@ -1,4 +1,4 @@
-// TO CHANGE: version - v1.0.1
+// TO CHANGE: version - v1.0.2
 package daytrading
 import ("fmt"
 "middleware/identification")
