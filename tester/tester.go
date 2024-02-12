@@ -1,7 +1,7 @@
-package test
+package tester
 
 import (fmt)
 
-func Test() {
+func Tester() {
 	fmt.Println("Test Package")
 }
