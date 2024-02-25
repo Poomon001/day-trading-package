@@ -2,10 +2,10 @@ package identification
 
 import (
 	"fmt"
-	"net/http"
-	"time"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"time"
 )
 
 var secretKey = []byte("secret")
@@ -34,7 +34,7 @@ func Identification(c *gin.Context) {
 	fmt.Println("Identification Middleware:")
 
 	// Retrieve token from the cookie
-	cookie, err := c.Cookie("session_token")
+	cookie, err := c.Cookie("token")
 	if err != nil {
 		handleError(c, http.StatusBadRequest, "Failed to retrieve session token from cookie", err)
 		c.Abort()
