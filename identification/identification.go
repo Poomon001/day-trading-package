@@ -82,5 +82,5 @@ func TestMiddleware(c *gin.Context) {
 }
 
 func Test() {
-	fmt.Println("Test:")
+	fmt.Println("Tests:")
 }
