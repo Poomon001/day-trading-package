@@ -10,10 +10,9 @@ import (
 
 var secretKey = []byte("secret")
 
-type Error struct {
-	Success bool    `json:"success"`
-	Data    *string `json:"data"`
-	Message string  `json:"message"`
+type ErrorResponse struct {
+	Success bool              `json:"success"`
+	Data    map[string]string `json:"data"`
 }
 
 type Claims struct {
@@ -22,10 +21,9 @@ type Claims struct {
 }
 
 func handleError(c *gin.Context, statusCode int, message string, err error) {
-	errorResponse := Error{
+	errorResponse := ErrorResponse{
 		Success: false,
-		Data:    nil,
-		Message: fmt.Sprintf("%s: %v", message, err),
+		Data:    map[string]string{"error": message},
 	}
 	c.IndentedJSON(statusCode, errorResponse)
 }
