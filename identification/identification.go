@@ -31,44 +31,42 @@ func handleError(c *gin.Context, statusCode int, message string, err error) {
 func Identification(c *gin.Context) {
 	fmt.Println("Identification Middleware:")
 
-	// Retrieve token from the cookie
-	cookie, err := c.Cookie("token")
-	if err != nil {
-		handleError(c, http.StatusBadRequest, "Failed to retrieve session token from cookie", err)
+	const BearerSchema = "Bearer "
+
+	header := c.GetHeader("Authorization")
+	if header == "" {
+		handleError(c, http.StatusUnauthorized, "Authorization header is missing", nil)
 		c.Abort()
 		return
 	}
 
-	claims := &Claims{}
-	token, err := jwt.ParseWithClaims(cookie, claims, func(token *jwt.Token) (interface{}, error) {
+	if !strings.HasPrefix(header, BearerSchema) {
+		handleError(c, http.StatusUnauthorized, "Invalid authorization header format", nil)
+		c.Abort()
+		return
+	}
+
+	tokenString := header[len(BearerSchema):]
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token jwt.Token) (interface{}, error) {
 		return secretKey, nil
 	})
 
 	if err != nil {
-		if err == jwt.ErrSignatureInvalid {
-			handleError(c, http.StatusBadRequest, "Unauthorized Access", err)
-			c.Abort()
-			return
-		}
-		handleError(c, http.StatusBadRequest, "Failed to parse claims", err)
-		c.Abort()
-		return
-	}
-
-	if !token.Valid {
 		handleError(c, http.StatusBadRequest, "Invalid token", err)
 		c.Abort()
 		return
 	}
 
-	// Check token expiry
-	if time.Now().Unix() > claims.ExpiresAt {
-		handleError(c, http.StatusUnauthorized, "Token expired", nil)
+	if claims, ok := token.Claims.(Claims); ok && token.Valid {
+		c.Set("claims", claims)
+		c.Next()
+	} else {
+		handleError(c, http.StatusBadRequest, "Invalid token", err)
 		c.Abort()
 		return
 	}
 
-	fmt.Println(claims.ExpiresAt)
+	fmt.Println("Username: ")
 	fmt.Println(claims.UserName)
 	c.Set("user_name", claims.UserName)
 	c.Next()
@@ -80,5 +78,5 @@ func TestMiddleware(c *gin.Context) {
 }
 
 func Test() {
-	fmt.Println("Tests:")
+	fmt.Println("Tests 123:")
 }
