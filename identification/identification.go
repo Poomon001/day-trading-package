@@ -40,31 +40,35 @@ func Identification(c *gin.Context) {
 		return
 	}
 
-	if !strings.HasPrefix(header, BearerSchema) {
-		handleError(c, http.StatusUnauthorized, "Invalid authorization header format", nil)
-		c.Abort()
-		return
-	}
+	claims := &Claims{}
 
 	tokenString := header[len(BearerSchema):]
-	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token jwt.Token) (interface{}, error) {
 		return secretKey, nil
 	})
 
 	if err != nil {
+        if err == jwt.ErrSignatureInvalid {
+            handleError(c, http.StatusBadRequest, "Unauthorized Access", err)
+            c.Abort()
+            return
+        }
+        handleError(c, http.StatusBadRequest, "Failed to parse claims", err)
+        c.Abort()
+        return
+    }
+
+	if !token.Valid {
 		handleError(c, http.StatusBadRequest, "Invalid token", err)
 		c.Abort()
 		return
 	}
 
-	if claims, ok := token.Claims.(Claims); ok && token.Valid {
-		c.Set("claims", claims)
-		c.Next()
-	} else {
-		handleError(c, http.StatusBadRequest, "Invalid token", err)
-		c.Abort()
-		return
-	}
+	if time.Now().Unix() > claims.ExpiresAt {
+        handleError(c, http.StatusUnauthorized, "Token expired", nil)
+        c.Abort()
+        return
+    }
 
 	fmt.Println("Username: ")
 	fmt.Println(claims.UserName)
