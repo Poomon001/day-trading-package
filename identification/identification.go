@@ -40,26 +40,36 @@ func Identification(c *gin.Context) {
 		return
 	}
 
-	claims := &Claims{}
+	// Check if the Authorization header starts with the Bearer schema
+	if !strings.HasPrefix(header, BearerSchema) {
+		handleError(c, http.StatusUnauthorized, "Invalid Authorization header format", nil)
+		c.Abort()
+		return
+	}
 
 	tokenString := header[len(BearerSchema):]
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token jwt.Token) (interface{}, error) {
+
+	// Parse the token with the provided secret key
+	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return secretKey, nil
 	})
 
 	if err != nil {
-        if err == jwt.ErrSignatureInvalid {
-            handleError(c, http.StatusBadRequest, "Unauthorized Access", err)
-            c.Abort()
-            return
-        }
-        handleError(c, http.StatusBadRequest, "Failed to parse claims", err)
-        c.Abort()
-        return
-    }
+		handleError(c, http.StatusUnauthorized, "Failed to parse token", err)
+		c.Abort()
+		return
+	}
 
 	if !token.Valid {
 		handleError(c, http.StatusBadRequest, "Invalid token", err)
+		c.Abort()
+		return
+	}
+
+	// Extract claims from the token
+	claims, ok := token.Claims.(*Claims)
+	if !ok {
+		handleError(c, http.StatusInternalServerError, "Failed to extract claims", nil)
 		c.Abort()
 		return
 	}
@@ -82,5 +92,5 @@ func TestMiddleware(c *gin.Context) {
 }
 
 func Test() {
-	fmt.Println("Tests 123:")
+	fmt.Println("Tests pc:")
 }
