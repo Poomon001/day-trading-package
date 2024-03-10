@@ -2,11 +2,12 @@ package identification
 
 import (
 	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"time"
-	"strings"
 )
 
 var secretKey = []byte("secret")
@@ -30,6 +31,9 @@ func handleError(c *gin.Context, statusCode int, message string, err error) {
 }
 
 func Identification(c *gin.Context) {
+	header := c.Request.Header
+	fmt.Println(header)
+
 	fmt.Println("Identification Middleware:")
 
 	const BearerSchema = "Bearer "
@@ -76,10 +80,10 @@ func Identification(c *gin.Context) {
 	}
 
 	if time.Now().Unix() > claims.ExpiresAt {
-        handleError(c, http.StatusUnauthorized, "Token expired", nil)
-        c.Abort()
-        return
-    }
+		handleError(c, http.StatusUnauthorized, "Token expired", nil)
+		c.Abort()
+		return
+	}
 
 	fmt.Println("Username: ")
 	fmt.Println(claims.UserName)
