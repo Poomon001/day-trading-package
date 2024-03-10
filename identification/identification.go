@@ -32,20 +32,15 @@ func handleError(c *gin.Context, statusCode int, message string, err error) {
 func Identification(c *gin.Context) {
 	fmt.Println("Identification Middleware:")
 
-	// Attempt to bind the JSON body to a struct
-	var body struct {
-		Token string `json:"token"`
-	}
-	if err := c.ShouldBindJSON(&body); err != nil {
-		handleError(c, http.StatusBadRequest, "Failed to parse request body", err)
+	header := c.GetHeader("token")
+	if header == "" {
+		handleError(c, http.StatusBadRequest, "Token not found", nil)
 		c.Abort()
 		return
 	}
 
-	tokenString := body.Token
-
 	// Parse the token with the provided secret key
-	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(header, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return secretKey, nil
 	})
 
