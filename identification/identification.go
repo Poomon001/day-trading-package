@@ -3,7 +3,6 @@ package identification
 import (
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -31,28 +30,19 @@ func handleError(c *gin.Context, statusCode int, message string, err error) {
 }
 
 func Identification(c *gin.Context) {
-	header := c.Request.Header
-	fmt.Println(header)
-
 	fmt.Println("Identification Middleware:")
 
-	const BearerSchema = "Bearer "
-
-	header := c.GetHeader("Authorization")
-	if header == "" {
-		handleError(c, http.StatusUnauthorized, "Authorization header is missing", nil)
+	// Attempt to bind the JSON body to a struct
+	var body struct {
+		Token string `json:"token"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		handleError(c, http.StatusBadRequest, "Failed to parse request body", err)
 		c.Abort()
 		return
 	}
 
-	// Check if the Authorization header starts with the Bearer schema
-	if !strings.HasPrefix(header, BearerSchema) {
-		handleError(c, http.StatusUnauthorized, "Invalid Authorization header format", nil)
-		c.Abort()
-		return
-	}
-
-	tokenString := header[len(BearerSchema):]
+	tokenString := body.Token
 
 	// Parse the token with the provided secret key
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
