@@ -34,7 +34,7 @@ func Identification(c *gin.Context) {
 
 	header := c.GetHeader("token")
 	if header == "" {
-		handleError(c, http.StatusOK, "Token not found", nil)
+		handleError(c, http.StatusUnauthorized, "Token not found", nil)
 		c.Abort()
 		return
 	}
@@ -45,13 +45,13 @@ func Identification(c *gin.Context) {
 	})
 
 	if err != nil {
-		handleError(c, http.StatusOK, "Failed to parse token", err)
+		handleError(c, http.StatusUnauthorized, "Failed to parse token", err)
 		c.Abort()
 		return
 	}
 
 	if !token.Valid {
-		handleError(c, http.StatusOK, "Invalid token", err)
+		handleError(c, http.StatusUnauthorized, "Invalid token", err)
 		c.Abort()
 		return
 	}
@@ -59,13 +59,13 @@ func Identification(c *gin.Context) {
 	// Extract claims from the token
 	claims, ok := token.Claims.(*Claims)
 	if !ok {
-		handleError(c, http.StatusOK, "Failed to extract claims", nil)
+		handleError(c, http.StatusUnauthorized, "Failed to extract claims", nil)
 		c.Abort()
 		return
 	}
 
 	if time.Now().Unix() > claims.ExpiresAt {
-		handleError(c, http.StatusOK, "Token expired", nil)
+		handleError(c, http.StatusUnauthorized, "Token expired", nil)
 		c.Abort()
 		return
 	}
